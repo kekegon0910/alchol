@@ -16,7 +16,7 @@
             background-color: #f0f0f0;
         }
 
-        .alcohol {
+        .calculator {
             background-color: #ffffff;
             padding: 20px;
             border-radius: 8px;
@@ -30,18 +30,43 @@
             margin-top: 0;
         }
 
-        label, input {
+        p{
+            margin-top: 0;
+            margin-bottom: 0;
+            text-align: left;  
+        }
+
+        /* ラベルのスタイル */
+        label {
             display: block;
+            text-align: left; /* テキストを左寄せにする */
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* 入力フィールドとセレクトボックスのスタイル */
+        input, select {
+            display: block;
+            width: 100%; /* 幅を100%にする */
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
             margin-bottom: 10px;
         }
 
         button {
+            clear: both; /* float を解除して要素を下に移動 */
+            margin-top: 10px; /* ボタンと他の要素の間隔 */
             padding: 10px 20px;
             background-color: #007bff;
             color: #ffffff;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            width: calc(100% - 20px); /* マージンを考慮して全体の幅から 20px を引く */
+            margin-left: 10px; /* 左右のマージンを均等に取るための調整 */
+            margin-right: 10px; /* 左右のマージンを均等に取るための調整 */
         }
 
         button:hover {
@@ -49,11 +74,18 @@
         }
 
         #result {
-            margin-top: 20px;
             font-size: 18px;
             font-weight: bold;
             color: #4CAF50; /* グリーン */
             background-color: #f7f7f7;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: left;
+        }
+        #resultDiv1 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000; /* グリーン */
             padding: 10px;
             border-radius: 4px;
         }
@@ -64,35 +96,65 @@
         <h1>アルコール濃度計算</h1>
 
     <div>
-        <label for="num1">アルコールの量(ml)</label>
+        <label for="num1">お酒1ビンの内容量(ml)</label>
         <input type="number" id="num1">
+        <div id="resultDiv1"></div>
     </div>
 
     <div>
-        <label for="num2">元のアルコール濃度(%)</label>
+        <label for="num2">１ビンのアルコール分,濃度(度,%)</label>
         <input type="number" id="num2">
     </div>
 
     <div>
-        <label for="num3">割るものの量(ml)</label>
-        <input type="number" id="num3">
-    </div>
-
-    <div>
-        <label for="num4">飲みたいアルコール濃度(%)</label>
+        <label for="num4">ご希望のアルコール分,濃度(度,%)</label>
+        <p>例:3%,5%,7%,9%</p>
         <input type="number" id="num4">
     </div>
 
-        <button onclick="calculate()">Calculate</button>
+    <div class="input-container">
+        <label for="num3">割る飲み物の量(ml)</label>
+        <div>
+            <select id="num3_select" onchange="showInputField()">
+                <option value="1">選択してください</option>
+                <option value="0">希望の量の入力</option>
+                <option value="2000">2000</option>
+                <option value="1500">1500</option>
+                <option value="1000">1000</option>
+                <option value="500">500</option>
+                <option value="350">350</option>
+            </select>
+
+            <input type="text" id="num3" list="num3_list" style="display: none;">
+
+        </div>
+    </div>
+
+        <button onclick="calculate()">計算</button>
+
+        <button onclick="clearFields()">クリアボタン</button>
 
         <div id="result"></div>
 </div>
 
     <script>
+        function showInputField() {
+            var selectValue = document.getElementById("num3_select").value;
+            var inputField = document.getElementById("num3");
+
+            if (selectValue === "0") {
+                inputField.style.display = "block";
+            } else {
+                inputField.style.display = "none";
+            }
+        }
+
         function calculate() {
             var num1 = parseFloat(document.getElementById("num1").value);
             var num2 = parseFloat(document.getElementById("num2").value);
-            var num3 = parseFloat(document.getElementById("num3").value);
+            var num3_input = parseFloat(document.getElementById("num3").value);
+            var num3_select = parseFloat(document.getElementById("num3_select").value);
+            var num3 = isNaN(num3_input) ? num3_select : num3_input;
             var num4 = parseFloat(document.getElementById("num4").value);
             var resultDiv = document.getElementById("result");
 
@@ -103,11 +165,27 @@
                 var noudo = (alryou*100)/num4;
                 var warukazu = Math.ceil((noudo-num1)/num3);
                 var motoaru = alryou/warukazu;
-                var waruryou = num1/warukazu;
+                var waruryou = Math.ceil(num1/warukazu);
+                var zannryou = Math.ceil(num1 - waruryou);
                 var nomunoudo = Math.ceil((motoaru/(waruryou+num3))*100);
 
-                resultDiv.innerHTML = "缶、ペットボトルの数:" + warukazu + "本" + "<br>アルコール濃度:" + nomunoudo + "%";
+                resultDiv.innerHTML = "1回分のお酒<span style='color: #1e90ff;'>" + waruryou + "(ml)</span>"+ "を" + "<br>飲み物:<span style='color: #1e90ff;'>" + num3 + "(ml)</span>" + "でうすめると" + "<br>ご希望の<span style='color: #1e90ff;'>" + nomunoudo + "(度,%)</span>" + "ができあがります";
+                resultDiv1.innerHTML = "アルコール残量:<span style='color: #3399cc;'>" + zannryou + "ml</span>";
             }
+        }
+
+        function clearFields() {
+            var inputField = document.getElementById("num3");
+
+            inputField.value = "";
+            document.getElementById("num1").value = "";
+            document.getElementById("num2").value = "";
+            document.getElementById("num3").value = "";
+            document.getElementById("num3_select").selectedIndex = 0;
+            document.getElementById("num4").value = "";
+            document.getElementById("result").innerHTML = "";
+            document.getElementById("resultDiv1").innerHTML = "";
+            inputField.style.display = "none";
         }
     </script>
 </body>
